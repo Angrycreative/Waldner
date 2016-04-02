@@ -79,7 +79,7 @@ export default class Waldner extends Bot {
       let topPlayers = new Store();
       topPlayers.fetch('players/top')
         .then( () => {
-          let str = '';
+          let str = 'Topplista\n';
           for (let i = 0; i < topPlayers.models.length; i++) {
             var p = topPlayers.models[i];
             str += `${i+1}. ${p.get('name')} - ${p.get('rating')}\n`;
