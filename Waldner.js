@@ -71,13 +71,13 @@ export class Waldner extends Bot {
 
     let commandValid = false;
 
-    if (message.indexOf('ladder') > -1 ) {
+    if (message.indexOf('ladder') === 0 ) {
       // this.sendLadder( channel || user.id );
       this.sendLadder( sendTo );
       commandValid = true;
     }
 
-    if (message.indexOf('games') > -1) {
+    if (message.indexOf('games') === 0 ) {
       this.sendLatestGames( sendTo );
       commandValid = true;
     }
@@ -92,7 +92,7 @@ export class Waldner extends Bot {
       commandValid = true;
     }
 
-    if (!commandValid) {
+    if (!commandValid && message.indexOf('waldner') > -1 ) {
       this.postTo( sendTo.name, this.getHelpString() );
     }
 
