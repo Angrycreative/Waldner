@@ -100,7 +100,7 @@ export class Waldner extends Bot {
 
   sendLatestGames( sendTo ) {
     request.get(this.APIPath + 'games', (error, response, body) => {
-      if (response.statusCode === 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         let json = JSON.parse(body);
         let str = 'Senaste matcherna';
         for (let i = 0; i < json.data.length; i++) {
