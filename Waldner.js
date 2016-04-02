@@ -169,7 +169,7 @@ export class Waldner extends Bot {
       formData: game
     })
       .on('response', (response) => {
-        if (response.statusCode === 200) {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
           this.postTo(receiver.name, 'Matchen sparad!');
         } else {
           this.postTo(receiver.name, 'Serverfel :(');
