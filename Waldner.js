@@ -61,7 +61,7 @@ export default class Waldner extends Bot {
           player2.getPropsForGame()
         ],
         scores: [
-          [score1, score2] 
+          { set: [score1, score2] }
         ]
       });
       
