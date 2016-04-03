@@ -46,24 +46,38 @@ export default class Waldner extends Bot {
 
 
     // Save Game
-    let gameResults = text.match( /\<\@(\S*)\> \<\@(\S*)\>\ (\d*)\ (\d*)/ );
-    if ( gameResults ) {
+    
+    // find string like "<@grod> <@grod> 11 2, 11 4"
+    // Scores can be separated by whitespace or dash and number of sets can be inifinte
+    let gameResults = text.match( /\<\@(\S*)\>\ \<\@(\S*)\>\ (\d+[\ |-]\d+.*)/ );
+    if ( gameResults.length === 4 ) {
 
       let player1 = this.userStore.getById( gameResults[1] );
       let player2 = this.userStore.getById( gameResults[2] );
 
-      let score1 = this.userStore.getById( gameResults[3] );
-      let score2 = this.userStore.getById( gameResults[4] );
+      let scoreString = gameResults[3];
+      let sets = scoreString.match( /(\d+[\ |-]\d+)/g );
 
-      let game = new Game({
+      let scores = [];
+
+      for (let i = 0; i < sets.length; i++) {
+        // Split up a score string: '11 4' (or '11-4') becomes [11, 4]
+        let s = sets[i].match( /(\d+)[\ |-](\d+)/ );
+        if (s.length < 3) { this.sendTo( user, channel, 'Felaktig formatering'); return; }
+        scores.push({
+          set: [ s[1], s[2] ]
+        });
+      }
+
+      let gameProps = {
         players: [
           player1.getPropsForGame(),
           player2.getPropsForGame()
         ],
-        scores: [
-          { set: [score1, score2] }
-        ]
-      });
+        scores: scores
+      };
+
+      let game = new Game( gameProps );
       
       game.save()
       .then(( response ) => {
