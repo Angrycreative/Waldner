@@ -50,7 +50,7 @@ export default class Waldner extends Bot {
     // find string like "<@grod> <@grod> 11 2, 11 4"
     // Scores can be separated by whitespace or dash and number of sets can be inifinte
     let gameResults = text.match( /\<\@(\S*)\>\ \<\@(\S*)\>\ (\d+[\ |-]\d+.*)/ );
-    if ( gameResults.length === 4 ) {
+    if ( gameResults && gameResults.length === 4 ) {
 
       let player1 = this.userStore.getById( gameResults[1] );
       let player2 = this.userStore.getById( gameResults[2] );
@@ -63,7 +63,7 @@ export default class Waldner extends Bot {
       for (let i = 0; i < sets.length; i++) {
         // Split up a score string: '11 4' (or '11-4') becomes [11, 4]
         let s = sets[i].match( /(\d+)[\ |-](\d+)/ );
-        if (s.length < 3) { this.sendTo( user, channel, 'Felaktig formatering'); return; }
+        if (!s || s.length < 3) { this.sendTo( user, channel, 'Felaktig formatering'); return; }
         scores.push({
           set: [ s[1], s[2] ]
         });
@@ -77,6 +77,8 @@ export default class Waldner extends Bot {
         scores: scores
       };
 
+      console.log(scores);
+
       let game = new Game( gameProps );
       
       game.save()
@@ -85,11 +87,10 @@ export default class Waldner extends Bot {
       }).catch( (error) => {
         this.respondTo( user, channel, 'Kunde inte spara matchen');
       });
-
     }
 
     // View ladder
-    if (text.indexOf('ladder') === 0) {
+    else if (text.indexOf('ladder') === 0) {
       let topPlayers = new Store();
       topPlayers.fetch('players/top')
         .then( () => {
@@ -106,7 +107,7 @@ export default class Waldner extends Bot {
     }
 
     // View latest Games
-    if ( text.indexOf('games') === 0 ) {
+    else if ( text.indexOf('games') === 0 ) {
       let games = new GameStore();
       games.fetch().then( () => {
         this.respondTo( user, channel, games.prettyPrint() );
