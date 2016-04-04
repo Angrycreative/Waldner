@@ -23,7 +23,7 @@ export default class Store {
           reject( error );
         } else {
           this.parseData( JSON.parse(body).data );
-          resolve();
+          resolve( body );
         }
       });
 

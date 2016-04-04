@@ -44,7 +44,6 @@ export default class Waldner extends Bot {
     let user = this.userStore.getById( message.user );
     let channel = this.channelStore.getById( message.channel );
 
-
     // Save Game
     
     // find string like "<@grod> <@grod> 11 2, 11 4"
@@ -102,7 +101,7 @@ export default class Waldner extends Bot {
           this.respondTo( user, channel, str);
         })
         .catch( () => {
-          this.respondTo( user, channel, 'Kunde inte hämta topplistan');
+          this.respondTo( user, channel, 'Kunde inte hämta topplistan :cry:');
         })
     }
 
@@ -110,7 +109,7 @@ export default class Waldner extends Bot {
     else if ( text.indexOf('games') === 0 ) {
       let games = new GameStore();
       games.fetch().then( () => {
-        this.respondTo( user, channel, games.prettyPrint() );
+        this.respondTo( user, channel, 'Senaste matcherna\n'+games.prettyPrint() );
       }).catch(() => {
         this.respondTo( user, channel, 'Kunde inte hämta matcher' );
       });
@@ -119,11 +118,11 @@ export default class Waldner extends Bot {
   }
 
   // Check if message was posted in a channel or Direct Message
-  respondTo( user, channel, message ) {
+  respondTo( user, channel, message, params ) {
     if ( channel ) {
-      this.postTo( channel.get('name'), message );
+      this.postTo( channel.get('name'), message, params );
     } else if ( user ) {
-      this.postTo( user.get('name'), message );
+      this.postTo( user.get('name'), message, params );
     }
   }
 
