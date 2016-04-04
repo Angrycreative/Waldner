@@ -36,11 +36,18 @@ export default class Waldner extends Bot {
 
   onMessage( message ) {
 
-    if (message.type !== 'message') {
+    if (message.type !== 'message' || !message.text ) {
       return; 
     }
 
-    let text = message.text;
+    // Commands should always start with waldner
+    if (message.text.toLowerCase().indexOf( this.name.toLowerCase() ) === -1) {
+      return; 
+    }
+
+    // Remove bot name from string
+    let text = message.text.toLowerCase().substring( this.name.length + 1 );
+
     let user = this.userStore.getById( message.user );
     let channel = this.channelStore.getById( message.channel );
 
