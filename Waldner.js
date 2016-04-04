@@ -46,7 +46,7 @@ export default class Waldner extends Bot {
     }
 
     // Remove bot name from string
-    let text = message.text.toLowerCase().substring( this.name.length + 1 );
+    let text = message.text.substring( this.name.length + 1 );
 
     let user = this.userStore.getById( message.user );
     let channel = this.channelStore.getById( message.channel );
