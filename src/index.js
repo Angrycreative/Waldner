@@ -6,6 +6,7 @@ import http from 'http';
 
 let env = process.env.NODE_ENV;
 let envFile = '.env';
+console.log('Starting on environment', env);
 
 if ( env ) {
   envFile = envFile += '.' + process.env.NODE_ENV;
