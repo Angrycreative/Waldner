@@ -28,7 +28,7 @@ if ( env === 'heroku' ) {
   console.log('Starting http server on port: ', process.env.PORT);
   startServer( '127.0.0.1', process.env.PORT );
 } else if ( env === 'openshift' ) {
-  startServer( process.env.OPENSHIFT_NODEJS_IP, process.env.OPENSHIFT_NODEJS_IP );
+  startServer( process.env.OPENSHIFT_NODEJS_IP, process.env.OPENSHIFT_NODEJS_PORT );
 }
 
 function startServer( host, port ) {
