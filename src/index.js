@@ -6,7 +6,7 @@ import http from 'http';
 
 let env = process.env.NODE_ENV;
 let envFile = '.env';
-console.log('Starting on environment', env);
+console.log('Starting on environment: ', env);
 
 if ( env ) {
   envFile = envFile += '.' + process.env.NODE_ENV;
@@ -30,12 +30,12 @@ if ( env === 'heroku' ) {
 
 function startServer() {
   var serverPort = process.env.PORT || 8000;
-  console.log('Starting on port', process.env.PORT);
+  console.log('Starting http server on port: ', process.env.PORT);
 
   http.createServer( (request, response) => {
 
     response.writeHead(200, {"Content-Type": "text/html"});
-    response.end('<em>Waldner awoke...</em>');
+    response.end('<em>Waldner woke up...</em>');
   
   }).listen( serverPort )
 
