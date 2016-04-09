@@ -14,9 +14,14 @@ var _Waldner2 = _interopRequireDefault(_Waldner);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var env = null;
+var env = process.env.NODE_ENV;
+var envFile = '.env';
 
-env = _dotenv2.default.config();
+if (env) {
+  envFile = envFile += '.' + process.env.NODE_ENV;
+}
+
+_dotenv2.default.config({ path: './' + envFile });
 
 var settings = {
   token: process.env.TOKEN,
