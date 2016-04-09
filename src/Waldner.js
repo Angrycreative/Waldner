@@ -40,8 +40,6 @@ export default class Waldner extends Bot {
       return; 
     }
 
-    console.log('Message', message.text);
-
     // Commands should always start with waldner
     if (message.text.toLowerCase().indexOf( this.name.toLowerCase() ) === -1) {
       return; 
