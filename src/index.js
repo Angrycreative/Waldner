@@ -29,6 +29,7 @@ if ( env === 'heroku' ) {
 
 function startServer() {
   var serverPort = process.env.PORT || 8000;
+  console.log('Starting on port', process.env.PORT);
 
   http.createServer( (request, response) => {
 
