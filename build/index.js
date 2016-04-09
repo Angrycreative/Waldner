@@ -12,10 +12,15 @@ var _Waldner = require('./Waldner.js');
 
 var _Waldner2 = _interopRequireDefault(_Waldner);
 
+var _http = require('http');
+
+var _http2 = _interopRequireDefault(_http);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var env = process.env.NODE_ENV;
 var envFile = '.env';
+console.log('Starting on environment', env);
 
 if (env) {
   envFile = envFile += '.' + process.env.NODE_ENV;
@@ -31,3 +36,18 @@ var settings = {
 
 var waldner = new _Waldner2.default(settings.name, settings.token);
 waldner.run();
+
+if (env === 'heroku') {
+  startServer();
+}
+
+function startServer() {
+  var serverPort = process.env.PORT || 8000;
+  console.log('Starting on port', process.env.PORT);
+
+  _http2.default.createServer(function (request, response) {
+
+    response.writeHead(200, { "Content-Type": "text/html" });
+    response.end('<em>Waldner awoke...</em>');
+  }).listen(serverPort);
+}
