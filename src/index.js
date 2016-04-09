@@ -23,7 +23,6 @@ const settings = {
 const waldner = new Waldner( settings.name, settings.token );
 waldner.run();
 
-
 if ( env === 'heroku' ) {
   console.log('Starting http server on port: ', process.env.PORT);
   startServer( '127.0.0.1', process.env.PORT );

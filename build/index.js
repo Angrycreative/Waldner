@@ -21,6 +21,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var env = process.env.NODE_ENV;
 var envFile = '.env';
 console.log('Starting on environment: ', env);
+console.log('Starting on environment: ', env);
 
 if (env) {
   envFile = envFile += '.' + process.env.NODE_ENV;
