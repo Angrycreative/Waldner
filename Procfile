@@ -1,1 +1,1 @@
-babel index.js --presets es2015 | node
+babel-node index.js --presets es2015
