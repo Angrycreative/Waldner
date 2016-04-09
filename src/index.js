@@ -2,9 +2,14 @@ import path from 'path';
 import dotenv from 'dotenv';
 import Waldner from './Waldner.js';
 
-let env = null;
+let env = process.env.NODE_ENV;
+let envFile = '.env';
 
-env = dotenv.config();
+if ( env ) {
+  envFile = envFile += '.' + process.env.NODE_ENV;
+}
+
+dotenv.config( {path: './' + envFile } );
 
 const settings = {
   token: process.env.TOKEN,
