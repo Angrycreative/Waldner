@@ -14,7 +14,9 @@ var _Waldner2 = _interopRequireDefault(_Waldner);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var env = _dotenv2.default.config();
+var env = null;
+
+env = _dotenv2.default.config();
 
 var settings = {
   token: process.env.TOKEN,
