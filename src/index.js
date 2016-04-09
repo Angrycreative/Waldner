@@ -2,6 +2,8 @@ import path from 'path';
 import dotenv from 'dotenv';
 import Waldner from './Waldner.js';
 
+import http from 'http';
+
 let env = process.env.NODE_ENV;
 let envFile = '.env';
 
@@ -19,3 +21,20 @@ const settings = {
 
 const waldner = new Waldner( settings.name, settings.token );
 waldner.run();
+
+
+if ( env === 'heroku' ) {
+  startServer();
+}
+
+function startServer() {
+  var serverPort = process.env.PORT || 8000;
+
+  http.createServer( (request, response) => {
+
+    response.writeHead(200, {"Content-Type": "text/html"});
+    response.end('<em>Waldner awoke...</em>');
+  
+  }).listen( serverPort )
+
+}
