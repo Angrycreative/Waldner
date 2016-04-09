@@ -38,16 +38,31 @@ var waldner = new _Waldner2.default(settings.name, settings.token);
 waldner.run();
 
 if (env === 'heroku') {
+<<<<<<< HEAD
   startServer();
 }
 
 function startServer() {
   var serverPort = process.env.PORT || 8000;
   console.log('Starting http server on port: ', process.env.PORT);
+=======
+  startServer('127.0.0.1', process.env.PORT);
+} else if (env === 'openshift') {
+  startServer(process.env.OPENSHIFT_NODEJS_IP, process.env.OPENSHIFT_NODEJS_IP);
+}
+
+function startServer(host, port) {
+  // var serverPort = process.env.PORT || 8000;
+  console.log('Starting http server on port: ', port);
+>>>>>>> 36ca55d376a73d3f56359ee18a4b1bea4a4b087a
 
   _http2.default.createServer(function (request, response) {
 
     response.writeHead(200, { "Content-Type": "text/html" });
     response.end('<em>Waldner woke up...</em>');
+<<<<<<< HEAD
   }).listen(serverPort);
+=======
+  }).listen(port, host || '127.0.0.1');
+>>>>>>> 36ca55d376a73d3f56359ee18a4b1bea4a4b087a
 }

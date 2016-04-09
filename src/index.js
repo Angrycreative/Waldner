@@ -25,18 +25,19 @@ waldner.run();
 
 
 if ( env === 'heroku' ) {
-  startServer();
+  console.log('Starting http server on port: ', process.env.PORT);
+  startServer( '127.0.0.1', process.env.PORT );
+} else if ( env === 'openshift' ) {
+  startServer( process.env.OPENSHIFT_NODEJS_IP, process.env.OPENSHIFT_NODEJS_IP );
 }
 
-function startServer() {
-  var serverPort = process.env.PORT || 8000;
-  console.log('Starting http server on port: ', process.env.PORT);
-
+function startServer( host, port ) {
+  console.log('Starting http server on port: ', port);
   http.createServer( (request, response) => {
 
     response.writeHead(200, {"Content-Type": "text/html"});
     response.end('<em>Waldner woke up...</em>');
   
-  }).listen( serverPort )
+  }).listen( port, host || '127.0.0.1' )
 
 }

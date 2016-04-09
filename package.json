@@ -2,7 +2,7 @@
   "name": "waldner",
   "version": "1.0.0",
   "description": "Angry Creative Waldner bot",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "start": "node build/index.js",
     "dev": "babel-node src/index.js --presets es2015",
