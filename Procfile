@@ -1,1 +1,2 @@
-babel-node index.js --presets es2015
+export NODE_ENV=heroku
+npm start
