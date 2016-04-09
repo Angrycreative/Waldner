@@ -4,11 +4,7 @@ import Waldner from './Waldner.js';
 
 let env = null;
 
-try {
-  env = dotenv.config();
-} catch(err) {
-  env = dotenv.config( { path: './.env.heroku' });
-}
+env = dotenv.config();
 
 const settings = {
   token: process.env.TOKEN,
