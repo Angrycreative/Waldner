@@ -1,2 +1,1 @@
-export NODE_ENV=heroku
-npm start
+NODE_ENV=heroku npm start
