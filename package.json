@@ -4,7 +4,7 @@
   "description": "Angry Creative Waldner bot",
   "main": "build/index.js",
   "scripts": {
-    "start": "node build/index.js",
+    "start": "node build/index.js --harmony",
     "dev": "babel-node src/index.js --presets es2015",
     "build": "babel src --out-dir build",
     "test": "echo \"Error: no test specified\" && exit 1"
