@@ -21,7 +21,29 @@ const settings = {
 }
 
 const waldner = new Waldner( settings.name, settings.token );
+waldner.on('close', waldnerStopped);
 waldner.run();
+
+// Waldner stop. Restart waldner
+function waldnerStopped() {
+  console.log('Waldner disconnected');
+  let tries = 0;
+  let maxTries = 20;
+
+  let interval = setInterval( () => {
+    console.log('Trying to connect...');
+    waldner.run();
+    tries ++;
+    if (tries >= maxTries) {
+      console.log('Max tries reached. Quitting...');
+      process.exit()
+    }
+  }, 2000 );
+
+  waldner.once('start', () => {
+    clearInterval( interval );
+  });
+}
 
 if ( env === 'heroku' ) {
   console.log('Starting http server on port: ', process.env.PORT);
