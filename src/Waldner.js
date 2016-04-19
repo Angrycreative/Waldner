@@ -20,6 +20,7 @@ export default class Waldner extends Bot {
   }
 
   onStart() {
+    console.log('Waldner connected to Slack'); 
 
     this.getUsers()
       .then((data) => {
@@ -93,6 +94,23 @@ export default class Waldner extends Bot {
       }).catch( (error) => {
         this.respondTo( user, channel, 'Kunde inte spara matchen');
       });
+    }
+
+    // View user rank, or current player rank if omitting the  user-id parameter
+    else if ( text.indexOf('rank') === 0 ) {
+      let results = text.match(/\<\@(\S*)\>/);
+      let userId = user.id;
+      if (results) {
+        userId = results[0];
+      }
+      let u = new User( {id: userId} );
+      u.fetch()
+        then( () => {
+        
+        })
+        .catch( () => {
+        
+        });
     }
 
     // View ladder

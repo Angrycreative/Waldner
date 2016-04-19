@@ -4,8 +4,10 @@ export default class User extends Model {
 
   constructor( props ) {
     super( props );
+    this.url = 'users';
   }
 
+  // Necessary props with format that server needs
   getPropsForGame() {
     return {
       name: this.get('real_name'),
