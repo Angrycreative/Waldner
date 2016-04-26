@@ -24,13 +24,20 @@ var User = function (_Model) {
   function User(props) {
     _classCallCheck(this, User);
 
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(User).call(this, props));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(User).call(this, props));
+
+    _this.url = 'users';
+    return _this;
   }
+
+  // Necessary props with format that server needs
+
 
   _createClass(User, [{
     key: 'getPropsForGame',
     value: function getPropsForGame() {
       return {
+        id: this.get('id'),
         name: this.get('real_name'),
         slack_id: this.get('id'),
         slack_name: this.get('name'),

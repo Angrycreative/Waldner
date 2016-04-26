@@ -31,6 +31,9 @@ var Store = function () {
     }
   }
 
+  // Fetch all models on current index endpoint
+
+
   _createClass(Store, [{
     key: 'fetch',
     value: function fetch(url) {
@@ -56,14 +59,19 @@ var Store = function () {
         return;
       }
 
+      // Loop every instance and create new Model objects
       this.models = [];
       for (var i = 0; i < data.length; i++) {
         var model = new this.ModelClass();
         model.props = data[i];
+        // If ID is found we want to set it to the core object
         model.id = model.props.id;
         this.models.push(model);
       }
     }
+
+    // Fetch with 'where' query
+
   }, {
     key: 'where',
     value: function where(key, value) {
@@ -74,6 +82,9 @@ var Store = function () {
       }
       return null;
     }
+
+    // Shorthand for fetching with where
+
   }, {
     key: 'getById',
     value: function getById(id) {

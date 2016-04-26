@@ -3,8 +3,8 @@ import request from 'request';
 export default class Model {
 
   constructor( props ) {
-    this.props = props; 
-    if ( props.id ) {
+    this.props = props || {}; 
+    if ( props && props.id ) {
       this.id = props.id;
     }
   }
@@ -13,19 +13,24 @@ export default class Model {
     return this.props[ key ];
   }
 
-  fetch() {
+  fetch( url ) {
     return new Promise( (resolve, reject) => {
 
       if (!this.id) {
         reject( 'ID undefined');
       }
 
-      request.get( process.env.API_BASE + this.url + '/' + this.id, (error, response, body) => {
+      url = url || process.env.API_BASE + this.url + '/' + this.id;
+
+      console.log('Fetch from', url);
+
+      request.get( url, (error, response, body) => {
         if (error || response.statusCode < 200 || response.statusCode >= 300 )  {
           reject( error ) ;
         } else {
           this.props = JSON.parse(body).data;
-          resolve( body );
+          // console.log(this.props);
+          resolve( body.data );
         }
       })
 
@@ -36,23 +41,24 @@ export default class Model {
 
     return new Promise( (resolve, reject) => {
 
+      console.log(process.env.API_BASE + this.url);
+      console.log('props', this.props);
+
       request.post({
         url: process.env.API_BASE + this.url,
         json: true,
         headers: {
           'Content-Type': 'application/json'
         },
-        formData: this.props
-      })
-      .on('response', (response) => {
-        if ( response.statusCode >= 200 && response.statusCode < 300) {
-          resolve( response );
+        body: this.props
+      }, (error, response, body) => {
+        if (error || response.statusCode < 200 || response.statusCode >= 300 )  {
+          console.log('Statuscode', error);
+          reject( error ) ;
         } else {
-          reject( response );
+          this.props = body.data;
+          resolve( body );
         }
-      })
-      .on('error', (error) => {
-        reject(error);
       });
 
     });

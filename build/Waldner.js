@@ -64,13 +64,19 @@ var Waldner = function (_Bot) {
     value: function onStart() {
       var _this2 = this;
 
+      console.log('Waldner connected to Slack');
+
       this.getUsers().then(function (data) {
         _this2.userStore = new _UserStore2.default(data.members);
         _this2.me = _this2.userStore.where('name', _this2.name);
+      }).catch(function (err) {
+        console.log('Error fetching users', err);
       });
 
       this.getChannels().then(function (data) {
         _this2.channelStore = new _ChannelStore2.default(data.channels);
+      }).catch(function (err) {
+        console.log('Error fetching channels', err);
       });
     }
   }, {
@@ -86,6 +92,8 @@ var Waldner = function (_Bot) {
       if (message.text.toLowerCase().indexOf(this.name.toLowerCase()) === -1) {
         return;
       }
+
+      console.log('Received message: ', message);
 
       // Remove bot name from string
       var text = message.text.substring(this.name.length + 1);
@@ -119,50 +127,66 @@ var Waldner = function (_Bot) {
           });
         }
 
+        console.log('Saving game between ' + player1.get('name') + ' and ' + player2.get('name'));
+
         var gameProps = {
           players: [player1.getPropsForGame(), player2.getPropsForGame()],
           scores: scores
         };
 
-        console.log(scores);
+        console.log('Saving game', gameProps);
 
         var game = new _Game2.default(gameProps);
 
         game.save().then(function (response) {
           _this3.respondTo(user, channel, 'Matchen sparades!');
         }).catch(function (error) {
+          console.log('Saving game error ', error);
           _this3.respondTo(user, channel, 'Kunde inte spara matchen');
         });
       }
 
-      // View ladder
-      else if (text.indexOf('ladder') === 0) {
-          (function () {
-            var topPlayers = new _Store2.default();
-            topPlayers.fetch('players/top').then(function () {
-              var str = 'Topplista\n';
-              for (var _i = 0; _i < topPlayers.models.length; _i++) {
-                var p = topPlayers.models[_i];
-                str += _i + 1 + '. ' + p.get('name') + ' - ' + p.get('rating') + '\n';
-              }
-              _this3.respondTo(user, channel, str);
-            }).catch(function () {
-              _this3.respondTo(user, channel, 'Kunde inte hämta topplistan :cry:');
-            });
-          })();
+      // View user rank, or current player rank if omitting the  user-id parameter
+      else if (text.indexOf('rank') === 0) {
+          var results = text.match(/\<\@(\S*)\>/);
+          var userId = user.id;
+          if (results) {
+            userId = results[0];
+          }
+          var u = new User({ id: userId });
+          u.fetch();
+          then(function () {}).catch(function () {});
         }
 
-        // View latest Games
-        else if (text.indexOf('games') === 0) {
+        // View ladder
+        else if (text.indexOf('ladder') === 0) {
             (function () {
-              var games = new _GameStore2.default();
-              games.fetch().then(function () {
-                _this3.respondTo(user, channel, 'Senaste matcherna\n' + games.prettyPrint());
-              }).catch(function () {
-                _this3.respondTo(user, channel, 'Kunde inte hämta matcher');
+              var topPlayers = new _Store2.default();
+              topPlayers.fetch('players/top').then(function () {
+                var str = 'Topplista\n';
+                for (var _i = 0; _i < topPlayers.models.length; _i++) {
+                  var p = topPlayers.models[_i];
+                  str += _i + 1 + '. ' + p.get('name') + ' - ' + p.get('rating') + '\n';
+                }
+                _this3.respondTo(user, channel, str);
+              }).catch(function (err) {
+                console.log('Could not fetch ladder', err);
+                _this3.respondTo(user, channel, 'Kunde inte hämta topplistan :cry:');
               });
             })();
           }
+
+          // View latest Games
+          else if (text.indexOf('games') === 0) {
+              (function () {
+                var games = new _GameStore2.default();
+                games.fetch().then(function () {
+                  _this3.respondTo(user, channel, 'Senaste matcherna\n' + games.prettyPrint());
+                }).catch(function () {
+                  _this3.respondTo(user, channel, 'Kunde inte hämta matcher');
+                });
+              })();
+            }
     }
 
     // Check if message was posted in a channel or Direct Message

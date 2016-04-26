@@ -20,6 +20,8 @@ const settings = {
   APIPath: process.env.API_BASE
 }
 
+console.log(settings.APIPath);
+
 const waldner = new Waldner( settings.name, settings.token );
 waldner.on('close', waldnerStopped);
 waldner.run();

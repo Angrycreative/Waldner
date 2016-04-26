@@ -5,6 +5,7 @@ import UserStore from './stores/UserStore.js';
 import ChannelStore from './stores/ChannelStore.js';
 import GameStore from './stores/GameStore.js';
 import Game from './models/Game.js';
+import User from './models/User.js';
 
 export default class Waldner extends Bot {
 
@@ -26,12 +27,12 @@ export default class Waldner extends Bot {
       .then((data) => {
         this.userStore = new UserStore( data.members );
         this.me = this.userStore.where( 'name', this.name );
-      });
+      }).catch( (err) => {console.log('Error fetching users', err)});
 
     this.getChannels()
       .then( (data) => {
         this.channelStore = new ChannelStore( data.channels );
-      });
+      }).catch( (err) => {console.log('Error fetching channels', err)});
 
   }
 
@@ -45,6 +46,8 @@ export default class Waldner extends Bot {
     if (message.text.toLowerCase().indexOf( this.name.toLowerCase() ) === -1) {
       return; 
     }
+
+    console.log('Received message: ', message);
 
     // Remove bot name from string
     let text = message.text.substring( this.name.length + 1 );
@@ -76,23 +79,27 @@ export default class Waldner extends Bot {
         });
       }
 
+      console.log('Saving game between ' + player1.get('name') + ' and ' + player2.get('name'));
+
       let gameProps = {
         players: [
           player1.getPropsForGame(),
           player2.getPropsForGame()
         ],
-        scores: scores
+        sets: scores
       };
 
-      console.log(scores);
+      console.log('Saving game', gameProps);
 
       let game = new Game( gameProps );
       
       game.save()
       .then(( response ) => {
-        this.respondTo( user, channel, 'Matchen sparades!');
+        console.log('response', response);
+        this.respondTo( user, channel, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:');
       }).catch( (error) => {
-        this.respondTo( user, channel, 'Kunde inte spara matchen');
+        console.log('Saving game error ', error);
+        this.respondTo( user, channel, 'Kunde inte spara matchen :crying_cat_face:');
       });
     }
 
@@ -101,15 +108,20 @@ export default class Waldner extends Bot {
       let results = text.match(/\<\@(\S*)\>/);
       let userId = user.id;
       if (results) {
-        userId = results[0];
+        userId = results[1];
       }
-      let u = new User( {id: userId} );
-      u.fetch()
-        then( () => {
-        
+
+      console.log('get user id', userId);
+
+      let u = this.userStore.where('id', userId);
+      let APIUser = new User({id: u.get('name')});
+
+      APIUser.fetch( process.env.API_BASE + 'players/' + u.get('name') )
+        .then( ( data ) => {
+          this.respondTo( user, channel, `@${APIUser.get('slack_name')} har ladder score ${APIUser.get('rating')} och ligger på plats XX`);
         })
-        .catch( () => {
-        
+        .catch( (error) => {
+          console.log('Get user error: ', error);
         });
     }
 
@@ -118,15 +130,17 @@ export default class Waldner extends Bot {
       let topPlayers = new Store();
       topPlayers.fetch('players/top')
         .then( () => {
-          let str = 'Topplista\n';
+          let str = ':trophy: Topplista :trophy:\n```';
           for (let i = 0; i < topPlayers.models.length; i++) {
             var p = topPlayers.models[i];
-            str += `${i+1}. ${p.get('name')} - ${p.get('rating')}\n`;
+            str += `${i+1}. ${p.get('name')} (${p.get('rating')})\n`;
           }
+          str += '```';
           this.respondTo( user, channel, str);
         })
-        .catch( () => {
-          this.respondTo( user, channel, 'Kunde inte hämta topplistan :cry:');
+        .catch( (err) => {
+          console.log('Could not fetch ladder', err);
+          this.respondTo( user, channel, 'Kunde inte hämta topplistan :tired_face:');
         })
     }
 
@@ -134,16 +148,36 @@ export default class Waldner extends Bot {
     else if ( text.indexOf('games') === 0 ) {
       let games = new GameStore();
       games.fetch().then( () => {
-        this.respondTo( user, channel, 'Senaste matcherna\n'+games.prettyPrint() );
-      }).catch(() => {
-        this.respondTo( user, channel, 'Kunde inte hämta matcher' );
+        this.respondTo( user, channel, 'Senaste matcherna :table_tennis_paddle_and_ball:\n'+games.prettyPrint() );
+      }).catch((err) => {
+        console.log(err);
+        this.respondTo( user, channel, 'Kunde inte hämta matcher :cry:' );
       });
+    }
+
+    // No message
+    else {
+      let quotes = [
+        'Vet du vad det sjukaste är?\nNär jag möter folk på gatan säger fem av tio fortfarande Kungen.',
+        'Medaljerna tänkte jag skicka till ett museum i Köping, men de fick inte plats så nu ligger de i påsar.',
+        'Jag var tvungen att sätta ett bunkerslag på 25 meter och "Tickan" sa till mig: "Sätter du det här slaget har du fri dricka i resten av ditt liv".\nJa, ja sa jag, pang mot flaggan och rakt i',
+        'Går jag in i en taxi i Kina säger chauffören: "Tja Lao Wa! Läget?".\nJag är halvkines och på slutet fick jag lika mycket stöd som den kines jag mötte.',
+        'Alla kineser jag möter och alla som är med dem, ska ta kort innan matcherna. För dem är det lika viktigt som att spela, och det är rätt häftigt. De vill ha något att visa upp i Kina.',
+        'Jag tycker att det är bättre ljus här i hallen, än när det är dåligt ljus.'
+      ];
+      let rand = Math.floor(Math.random() * quotes.length );
+      this.respondTo( user, channel, quotes[ rand ] );
     }
   
   }
 
   // Check if message was posted in a channel or Direct Message
   respondTo( user, channel, message, params ) {
+    params = params || {};
+    if (!params.icon_user) {
+      params.icon_url = 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg';
+    }
+
     if ( channel ) {
       this.postTo( channel.get('name'), message, params );
     } else if ( user ) {

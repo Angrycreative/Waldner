@@ -18,7 +18,10 @@ var Model = function () {
   function Model(props) {
     _classCallCheck(this, Model);
 
-    this.props = props;
+    this.props = props || {};
+    if (props && props.id) {
+      this.id = props.id;
+    }
   }
 
   _createClass(Model, [{
@@ -27,27 +30,50 @@ var Model = function () {
       return this.props[key];
     }
   }, {
-    key: 'save',
-    value: function save() {
+    key: 'fetch',
+    value: function fetch() {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
 
+        if (!_this.id) {
+          reject('ID undefined');
+        }
+
+        _request2.default.get(process.env.API_BASE + _this.url + '/' + _this.id, function (error, response, body) {
+          if (error || response.statusCode < 200 || response.statusCode >= 300) {
+            reject(error);
+          } else {
+            _this.props = JSON.parse(body).data;
+            resolve(body);
+          }
+        });
+      });
+    }
+  }, {
+    key: 'save',
+    value: function save() {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+
         _request2.default.post({
-          url: process.env.API_BASE + _this.url,
+          url: process.env.API_BASE + _this2.url,
           json: true,
           headers: {
             'Content-Type': 'application/json'
           },
-          formData: _this.props
-        }).on('response', function (response) {
-          if (response.statusCode >= 200 && response.statusCode < 300) {
-            resolve(response);
+          formData: _this2.props
+        }, function (err, response, body) {
+          console.log('err', err);
+          console.log('response', response);
+          console.log('body', body);
+          if (error || response.statusCode < 200 || response.statusCode >= 300) {
+            reject(error);
           } else {
-            reject(response);
+            // this.props = JSON.parse(body).data;
+            resolve(body);
           }
-        }).on('error', function (error) {
-          reject(error);
         });
       });
     }

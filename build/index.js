@@ -21,7 +21,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var env = process.env.NODE_ENV;
 var envFile = '.env';
 console.log('Starting on environment: ', env);
-console.log('Starting on environment: ', env);
 
 if (env) {
   envFile = envFile += '.' + process.env.NODE_ENV;
@@ -35,8 +34,32 @@ var settings = {
   APIPath: process.env.API_BASE
 };
 
+console.log(settings.API_BASE);
+
 var waldner = new _Waldner2.default(settings.name, settings.token);
+waldner.on('close', waldnerStopped);
 waldner.run();
+
+// Waldner stop. Restart waldner
+function waldnerStopped() {
+  console.log('Waldner disconnected');
+  var tries = 0;
+  var maxTries = 20;
+
+  var interval = setInterval(function () {
+    console.log('Trying to connect...');
+    waldner.run();
+    tries++;
+    if (tries >= maxTries) {
+      console.log('Max tries reached. Quitting...');
+      process.exit();
+    }
+  }, 2000);
+
+  waldner.once('start', function () {
+    clearInterval(interval);
+  });
+}
 
 if (env === 'heroku') {
   console.log('Starting http server on port: ', process.env.PORT);

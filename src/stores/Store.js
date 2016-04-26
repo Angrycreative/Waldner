@@ -13,6 +13,7 @@ export default class Store {
     }
   }
 
+  // Fetch all models on current index endpoint
   fetch( url ) {
 
     return new Promise( (resolve, reject) => {
@@ -22,6 +23,7 @@ export default class Store {
         if ( error || response.statusCode < 200 || response.statusCode >= 300 ) {
           reject( error );
         } else {
+
           this.parseData( JSON.parse(body).data );
           resolve( body );
         }
@@ -34,15 +36,18 @@ export default class Store {
   parseData( data ) {
     if (!data) { return; }
 
+    // Loop every instance and create new Model objects
     this.models = [];
     for (let i = 0; i < data.length; i++) {
       let model = new this.ModelClass();
       model.props = data[i];
+      // If ID is found we want to set it to the core object
       model.id = model.props.id;
       this.models.push( model );
     }
   }
 
+  // Fetch with 'where' query
   where( key, value ) {
     for (let i = 0; i < this.models.length; i++) {
       if (this.models[i].props[key] === value) {
@@ -52,6 +57,7 @@ export default class Store {
     return null;
   }
 
+  // Shorthand for fetching with where
   getById( id ) {
     return this.where('id', id);
   }
