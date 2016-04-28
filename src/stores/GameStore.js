@@ -22,7 +22,7 @@ export default class GameStore extends Store {
       playerNames.push( p1 + ' vs ' + p2);
 
       scores.push( sets.map( (set) => {
-        return set.score1 + '-' + set.score2;
+        return set.scores[0] + '-' + set.scores[1];
       }).join(', ') );
     }
 
@@ -43,7 +43,7 @@ export default class GameStore extends Store {
       while (p.length < maxLength) {
         p += ' ';
       }
-      return p + ' ' + scores[idx];
+      return p + '  ' + scores[idx];
     }).join('\n');
 
   }

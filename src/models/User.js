@@ -12,10 +12,12 @@ export default class User extends Model {
     return {
       // id: this.get('id'),
       name: this.get('real_name'),
-      // slack_id: this.get('id'),
+      email: this.get('profile').email,
+      slack_id: this.get('id'),
       slack_name: this.get('name'),
       avatar_url: this.get('profile').image_original
     } 
+
   }
 
 }

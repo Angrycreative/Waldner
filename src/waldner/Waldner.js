@@ -1,35 +1,35 @@
 import Bot from 'slackbots';
-import Model from './models/Model.js';
-import Store from './stores/Store.js';
-import UserStore from './stores/UserStore.js';
-import ChannelStore from './stores/ChannelStore.js';
-import GameStore from './stores/GameStore.js';
-import Game from './models/Game.js';
-import User from './models/User.js';
+import Store from '../stores/Store.js';
+import UserStore from '../stores/UserStore.js';
+import ChannelStore from '../stores/ChannelStore.js';
+import GameStore from '../stores/GameStore.js';
+import Game from '../models/Game.js';
+import User from '../models/User.js';
 
-export default class Waldner extends Bot {
+export default class Waldner {
 
   constructor( name, token, api ) {
-    super( {name, token} );
+    this.name = name;
+    this.bot = new Bot( {name, token });
   }
 
   run() {
     console.log('Waldner iz alive!'); 
 
-    this.on('start', this.onStart);
-    this.on('message', this.onMessage);
+    this.bot.on('start', this.onStart.bind(this));
+    this.bot.on('message', this.onMessage.bind(this));
   }
 
   onStart() {
     console.log('Waldner connected to Slack'); 
 
-    this.getUsers()
+    this.bot.getUsers()
       .then((data) => {
         this.userStore = new UserStore( data.members );
         this.me = this.userStore.where( 'name', this.name );
       }).catch( (err) => {console.log('Error fetching users', err)});
 
-    this.getChannels()
+    this.bot.getChannels()
       .then( (data) => {
         this.channelStore = new ChannelStore( data.channels );
       }).catch( (err) => {console.log('Error fetching channels', err)});
@@ -54,6 +54,7 @@ export default class Waldner extends Bot {
 
     let user = this.userStore.getById( message.user );
     let channel = this.channelStore.getById( message.channel );
+
 
     // Save Game
     
@@ -107,6 +108,7 @@ export default class Waldner extends Bot {
     else if ( text.indexOf('rank') === 0 ) {
       let results = text.match(/\<\@(\S*)\>/);
       let userId = user.id;
+      let weekly = text.indexOf('all time') > -1 ? false : true;
       if (results) {
         userId = results[1];
       }
@@ -118,7 +120,15 @@ export default class Waldner extends Bot {
 
       APIUser.fetch( process.env.API_BASE + 'players/' + u.get('name') )
         .then( ( data ) => {
-          this.respondTo( user, channel, `@${APIUser.get('slack_name')} har ladder score ${APIUser.get('rating')} och ligger på plats XX`);
+          let ratings = APIUser.get('ratings');
+          let ladderscore = ratings.weekly;
+          let ranks = APIUser.get('rank');
+          let rank = ranks.weekly;
+          if (!weekly) {
+            ladderscore = ratings.all_time; 
+            rank = rank.all_time;
+          }
+          this.respondTo( user, channel, `@${APIUser.get('slack_name')} har ladder score ${ladderscore} och ligger på plats ${rank}`);
         })
         .catch( (error) => {
           console.log('Get user error: ', error);
@@ -127,13 +137,16 @@ export default class Waldner extends Bot {
 
     // View ladder
     else if (text.indexOf('ladder') === 0) {
+      let weekly = text.indexOf('all time') > -1 ? false : true;
       let topPlayers = new Store();
+      
       topPlayers.fetch('players/top')
         .then( () => {
           let str = ':trophy: Topplista :trophy:\n```';
           for (let i = 0; i < topPlayers.models.length; i++) {
-            var p = topPlayers.models[i];
-            str += `${i+1}. ${p.get('name')} (${p.get('rating')})\n`;
+            let p = topPlayers.models[i];
+            let rating = weekly ? p.get('ratings').weekly : p.get('ratings').all_time;
+            str += `${i+1}. ${p.get('name')} (${rating})\n`;
           }
           str += '```';
           this.respondTo( user, channel, str);
@@ -179,9 +192,9 @@ export default class Waldner extends Bot {
     }
 
     if ( channel ) {
-      this.postTo( channel.get('name'), message, params );
+      this.bot.postTo( channel.get('name'), message, params );
     } else if ( user ) {
-      this.postTo( user.get('name'), message, params );
+      this.bot.postTo( user.get('name'), message, params );
     }
   }
 

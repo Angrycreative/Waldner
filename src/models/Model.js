@@ -1,4 +1,5 @@
 import request from 'request';
+import Http from '../Http.js';
 
 export default class Model {
 
@@ -22,17 +23,14 @@ export default class Model {
 
       url = url || process.env.API_BASE + this.url + '/' + this.id;
 
-      console.log('Fetch from', url);
-
-      request.get( url, (error, response, body) => {
-        if (error || response.statusCode < 200 || response.statusCode >= 300 )  {
-          reject( error ) ;
-        } else {
-          this.props = JSON.parse(body).data;
-          // console.log(this.props);
-          resolve( body.data );
-        }
-      })
+      Http.get( url )
+        .then( data => {
+          this.props = JSON.parse(data).data;
+          resolve( data );
+        })
+        .catch( err => {
+          reject( err );
+        });
 
     });
   }
@@ -44,22 +42,13 @@ export default class Model {
       console.log(process.env.API_BASE + this.url);
       console.log('props', this.props);
 
-      request.post({
-        url: process.env.API_BASE + this.url,
-        json: true,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: this.props
-      }, (error, response, body) => {
-        if (error || response.statusCode < 200 || response.statusCode >= 300 )  {
-          console.log('Statuscode', error);
-          reject( error ) ;
-        } else {
-          this.props = body.data;
-          resolve( body );
-        }
-      });
+      Http.post( process.env.API_BASE + this.url, this.props )
+        .then( data => {
+          resolve( data );
+        })
+        .catch( err => {
+          reject( err );
+        });
 
     });
 

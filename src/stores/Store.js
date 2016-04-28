@@ -1,5 +1,6 @@
 import request from 'request';
 import Model from '../models/Model.js';
+import Http from '../Http.js';
 
 export default class Store {
 
@@ -19,21 +20,21 @@ export default class Store {
     return new Promise( (resolve, reject) => {
 
       url = url || this.ModelClass.url;
-      request.get( process.env.API_BASE + url, (error, response, body) => {
-        if ( error || response.statusCode < 200 || response.statusCode >= 300 ) {
-          reject( error );
-        } else {
-
-          this.parseData( JSON.parse(body).data );
-          resolve( body );
-        }
-      });
+      Http.get( process.env.API_BASE + url )
+        .then( data => {
+          this.parseData( JSON.parse(data).data );
+          resolve( data );
+        })
+        .catch( err => {
+          reject( err ) ;
+        })
 
     });
 
   }
 
   parseData( data ) {
+    console.log('data', data);
     if (!data) { return; }
 
     // Loop every instance and create new Model objects
