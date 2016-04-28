@@ -42,8 +42,8 @@ var GameStore = function (_Store) {
       for (var i = 0; i < this.models.length; i++) {
         var game = this.models[i];
         var players = game.get('players');
-        var winner = game.get('winner');
         var sets = game.get('sets');
+        var winner = game.get('winner');
 
         if (!players || players.length < 2) {
           continue;
@@ -52,7 +52,7 @@ var GameStore = function (_Store) {
         var p1 = players[0].name;
         var p2 = players[1].name;
 
-        if (winner === 1) {
+        if (String(winner) === "1") {
           p1 = '(' + p1 + ')';
         } else {
           p2 = '(' + p2 + ')';

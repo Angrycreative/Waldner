@@ -15,8 +15,8 @@ export default class GameStore extends Store {
     for (let i = 0; i < this.models.length; i++) {
       let game = this.models[i];
       let players = game.get('players');
-      let winner = game.get('winner');
       let sets = game.get('sets');
+      let winner = game.get('winner');
 
       if (!players || players.length < 2) {
         continue;
@@ -26,7 +26,7 @@ export default class GameStore extends Store {
       let p1 = players[0].name;
       let p2 = players[1].name;
 
-      if (winner === 1) {
+      if (String(winner) === "1") {
         p1 = `(${p1})`;
       } else {
         p2 = `(${p2})`;
