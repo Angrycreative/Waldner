@@ -14,6 +14,10 @@ var _Model = require('../models/Model.js');
 
 var _Model2 = _interopRequireDefault(_Model);
 
+var _Http = require('../Http.js');
+
+var _Http2 = _interopRequireDefault(_Http);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42,19 +46,18 @@ var Store = function () {
       return new Promise(function (resolve, reject) {
 
         url = url || _this.ModelClass.url;
-        _request2.default.get(process.env.API_BASE + url, function (error, response, body) {
-          if (error || response.statusCode < 200 || response.statusCode >= 300) {
-            reject(error);
-          } else {
-            _this.parseData(JSON.parse(body).data);
-            resolve(body);
-          }
+        _Http2.default.get(process.env.API_BASE + url).then(function (data) {
+          _this.parseData(JSON.parse(data).data);
+          resolve(data);
+        }).catch(function (err) {
+          reject(err);
         });
       });
     }
   }, {
     key: 'parseData',
     value: function parseData(data) {
+      console.log('data', data);
       if (!data) {
         return;
       }

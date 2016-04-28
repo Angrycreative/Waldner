@@ -10,6 +10,10 @@ var _request = require('request');
 
 var _request2 = _interopRequireDefault(_request);
 
+var _Http = require('../Http.js');
+
+var _Http2 = _interopRequireDefault(_Http);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -31,7 +35,7 @@ var Model = function () {
     }
   }, {
     key: 'fetch',
-    value: function fetch() {
+    value: function fetch(url) {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
@@ -40,13 +44,13 @@ var Model = function () {
           reject('ID undefined');
         }
 
-        _request2.default.get(process.env.API_BASE + _this.url + '/' + _this.id, function (error, response, body) {
-          if (error || response.statusCode < 200 || response.statusCode >= 300) {
-            reject(error);
-          } else {
-            _this.props = JSON.parse(body).data;
-            resolve(body);
-          }
+        url = url || process.env.API_BASE + _this.url + '/' + _this.id;
+
+        _Http2.default.get(url).then(function (data) {
+          _this.props = JSON.parse(data).data;
+          resolve(data);
+        }).catch(function (err) {
+          reject(err);
         });
       });
     }
@@ -57,23 +61,13 @@ var Model = function () {
 
       return new Promise(function (resolve, reject) {
 
-        _request2.default.post({
-          url: process.env.API_BASE + _this2.url,
-          json: true,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          formData: _this2.props
-        }, function (err, response, body) {
-          console.log('err', err);
-          console.log('response', response);
-          console.log('body', body);
-          if (error || response.statusCode < 200 || response.statusCode >= 300) {
-            reject(error);
-          } else {
-            // this.props = JSON.parse(body).data;
-            resolve(body);
-          }
+        console.log(process.env.API_BASE + _this2.url);
+        console.log('props', _this2.props);
+
+        _Http2.default.post(process.env.API_BASE + _this2.url, _this2.props).then(function (data) {
+          resolve(data);
+        }).catch(function (err) {
+          reject(err);
         });
       });
     }

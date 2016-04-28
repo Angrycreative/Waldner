@@ -37,8 +37,9 @@ var User = function (_Model) {
     key: 'getPropsForGame',
     value: function getPropsForGame() {
       return {
-        id: this.get('id'),
+        // id: this.get('id'),
         name: this.get('real_name'),
+        email: this.get('profile').email,
         slack_id: this.get('id'),
         slack_name: this.get('name'),
         avatar_url: this.get('profile').image_original

@@ -42,14 +42,26 @@ var GameStore = function (_Store) {
       for (var i = 0; i < this.models.length; i++) {
         var game = this.models[i];
         var players = game.get('players');
+        var winner = game.get('winner');
         var sets = game.get('sets');
+
+        if (!players || players.length < 2) {
+          continue;
+        }
+
         var p1 = players[0].name;
         var p2 = players[1].name;
+
+        if (winner === 1) {
+          p1 = '(' + p1 + ')';
+        } else {
+          p2 = '(' + p2 + ')';
+        }
 
         playerNames.push(p1 + ' vs ' + p2);
 
         scores.push(sets.map(function (set) {
-          return set.score1 + '-' + set.score2;
+          return set.scores[0] + '-' + set.scores[1];
         }).join(', '));
       }
 
@@ -71,7 +83,7 @@ var GameStore = function (_Store) {
         while (p.length < maxLength) {
           p += ' ';
         }
-        return p + ' ' + scores[idx];
+        return p + '  ' + scores[idx];
       }).join('\n');
     }
   }]);
