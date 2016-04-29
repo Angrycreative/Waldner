@@ -57,7 +57,6 @@ var Store = function () {
   }, {
     key: 'parseData',
     value: function parseData(data) {
-      console.log('data', data);
       if (!data) {
         return;
       }

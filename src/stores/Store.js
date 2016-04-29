@@ -34,7 +34,6 @@ export default class Store {
   }
 
   parseData( data ) {
-    console.log('data', data);
     if (!data) { return; }
 
     // Loop every instance and create new Model objects

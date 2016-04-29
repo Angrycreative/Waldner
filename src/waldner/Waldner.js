@@ -22,20 +22,20 @@ export default class Waldner {
   setupListeners() {
 
     // Rank player, with player id optional
-    this.bot.hears( /rank(\ \<\@(\S+)\>)?/i, ( message, userPresent, userId ) => {
+    this.bot.hears( /rank(\ \<\@(\S+)\>)?(\ all\ time)?/i, ( message, userPresent, userId, allTime ) => {
 
       userId = userId || message.user;
       this.getRankForUser( userId, responseString => {
         this.bot.respond( message, responseString );
-      });
+      }, allTime);
 
     });
 
     // Responds with the ladder
-    this.bot.hears( /ladder/i, ( message ) => {
+    this.bot.hears( /ladder(\ all\ time)?/i, ( message, allTime ) => {
       this.getLadder( (responseString) => {
         this.bot.respond( message, responseString );
-      });
+      }, allTime );
     });
 
     // List games
@@ -100,15 +100,19 @@ export default class Waldner {
 
   }
 
-  getLadder( callback ) {
+  getLadder( callback, allTime) {
+
+    console.log('ALL TIME', allTime);
 
     let topPlayers = new Store();
     topPlayers.fetch('players/top')
       .then( () => {
-        let str = ':trophy: Topplista :trophy:\n```';
+        let str = ':trophy: Veckans topplista :trophy:\n```';
+        if ( allTime ) { str = ':trophy: Maratonlista :trophy:\n```'; }
         for (let i = 0; i < topPlayers.models.length; i++) {
           let p = topPlayers.models[i];
-          let rating = p.get('ratings').all_time;
+          let rating = p.get('ratings').weekly;
+          if (allTime) { rating = p.get('ratings').all_time; }
           str += `${i+1}. ${p.get('name')} (${rating})\n`;
         }
         str += '```';
@@ -120,17 +124,25 @@ export default class Waldner {
       })
   }
 
-  getRankForUser( userId, callback ) {
+  getRankForUser( userId, callback, allTime ) {
     let user = new User({id: userId});
 
     console.log('user id', userId);
     user.fetch( process.env.API_BASE + 'players/' + userId )
       .then( ( data ) => {
         let ratings = user.get('ratings');
-        let ladderscore = ratings.all_time;
+        let ladderscore = ratings.weekly;
         let ranks = user.get('rank');
-        let rank = ranks.all_time;
-        callback( `@${user.get('slack_name')} har ladder score ${ladderscore} och ligger på plats ${rank}` );
+        let rank = ranks.weekly;
+        if ( allTime ) {
+          ladderscore = ratings.all_time;
+          rank = ranks.all_time;
+        }
+
+        let emoji = '';
+        if (rank == 1) { emoji = ':party::sports_medal::trophy:'; }
+
+        callback( `@${user.get('slack_name')} har ladder score ${ladderscore} och ligger på plats ${rank} ${emoji}` );
       })
       .catch( (error) => {
         callback('Kunde inte hämta användare :cry: ' + error);

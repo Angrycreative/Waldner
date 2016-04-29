@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _slackbots = require('slackbots');
+var _Bot = require('./Bot.js');
 
-var _slackbots2 = _interopRequireDefault(_slackbots);
+var _Bot2 = _interopRequireDefault(_Bot);
 
 var _Store = require('../stores/Store.js');
 
@@ -43,177 +43,134 @@ var Waldner = function () {
     _classCallCheck(this, Waldner);
 
     this.name = name;
-    this.bot = new _slackbots2.default({ name: name, token: token });
+    this.bot = new _Bot2.default(name, token);
   }
 
   _createClass(Waldner, [{
     key: 'run',
     value: function run() {
       console.log('Waldner iz alive!');
-
-      this.bot.on('start', this.onStart.bind(this));
-      this.bot.on('message', this.onMessage.bind(this));
+      this.setupListeners();
+      this.bot.init();
     }
   }, {
-    key: 'onStart',
-    value: function onStart() {
+    key: 'setupListeners',
+    value: function setupListeners() {
       var _this = this;
 
-      console.log('Waldner connected to Slack');
+      // Rank player, with player id optional
+      this.bot.hears(/rank(\ \<\@(\S+)\>)?(\ all\ time)?/i, function (message, userPresent, userId, allTime) {
 
-      this.bot.getUsers().then(function (data) {
-        _this.userStore = new _UserStore2.default(data.members);
-        _this.me = _this.userStore.where('name', _this.name);
-      }).catch(function (err) {
-        console.log('Error fetching users', err);
+        userId = userId || message.user;
+        _this.getRankForUser(userId, function (responseString) {
+          _this.bot.respond(message, responseString);
+        }, allTime);
       });
 
-      this.bot.getChannels().then(function (data) {
-        _this.channelStore = new _ChannelStore2.default(data.channels);
-      }).catch(function (err) {
-        console.log('Error fetching channels', err);
+      // Responds with the ladder
+      this.bot.hears(/ladder(\ all\ time)?/i, function (message, allTime) {
+        _this.getLadder(function (responseString) {
+          _this.bot.respond(message, responseString);
+        }, allTime);
+      });
+
+      // List games
+      this.bot.hears(/games/i, function (message) {
+        var games = new _GameStore2.default();
+        games.fetch().then(function () {
+          _this.bot.respond(message, 'Senaste matcherna :table_tennis_paddle_and_ball:\n' + games.prettyPrint());
+        }).catch(function () {
+          _this.bot.respond(message, 'Kunde inte hämta matcher :cry:');
+        });
+      });
+
+      // Save a game
+      this.bot.hears(/\<\@(\S*)\>\ \<\@(\S*)\>\ (\d+[\ |-]\d+.*)/i, function (message, firstUserId, secondUserId, sets) {
+        sets = sets.replace(',', ' ').replace('  ', ' ').split(' ');
+
+        var firstUser = new _User2.default(_this.bot.getUser(firstUserId));
+        var secondUser = new _User2.default(_this.bot.getUser(secondUserId));
+
+        console.log(firstUser);
+
+        var scores = sets.map(function (set) {
+          var s1 = set.split('-')[0];
+          var s2 = set.split('-')[1];
+          return { set: [s1, s2] };
+        });
+
+        new _Game2.default({
+          players: [firstUser.getPropsForGame(), secondUser.getPropsForGame()],
+          sets: scores
+        }).save().then(function () {
+          _this.bot.respond(message, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:');
+        }).catch(function () {
+          _this.bot.respond(message, 'Kunde inte spara matchen :crying_cat_face:');
+        });
+      });
+
+      this.bot.hears(/help/i, function (message) {
+        _this.bot.respond(message, 'Hahahahahahaaaaaa.. Fuck off');
+      });
+
+      this.bot.hears(/^waldner$/i, function (message) {
+        var quotes = ['Vet du vad det sjukaste är?\nNär jag möter folk på gatan säger fem av tio fortfarande Kungen.', 'Medaljerna tänkte jag skicka till ett museum i Köping, men de fick inte plats så nu ligger de i påsar.', 'Jag var tvungen att sätta ett bunkerslag på 25 meter och "Tickan" sa till mig: "Sätter du det här slaget har du fri dricka i resten av ditt liv".\nJa, ja sa jag, pang mot flaggan och rakt i', 'Går jag in i en taxi i Kina säger chauffören: "Tja Lao Wa! Läget?".\nJag är halvkines och på slutet fick jag lika mycket stöd som den kines jag mötte.', 'Alla kineser jag möter och alla som är med dem, ska ta kort innan matcherna. För dem är det lika viktigt som att spela, och det är rätt häftigt. De vill ha något att visa upp i Kina.', 'Jag tycker att det är bättre ljus här i hallen, än när det är dåligt ljus.'];
+        var rand = Math.floor(Math.random() * quotes.length);
+        _this.bot.respond(message, quotes[rand]);
       });
     }
   }, {
-    key: 'onMessage',
-    value: function onMessage(message) {
-      var _this2 = this;
+    key: 'getLadder',
+    value: function getLadder(callback, allTime) {
 
-      if (message.type !== 'message' || !message.text) {
-        return;
-      }
+      console.log('ALL TIME', allTime);
 
-      // Commands should always start with waldner
-      if (message.text.toLowerCase().indexOf(this.name.toLowerCase()) === -1) {
-        return;
-      }
-
-      console.log('Received message: ', message);
-
-      // Remove bot name from string
-      var text = message.text.substring(this.name.length + 1);
-
-      var user = this.userStore.getById(message.user);
-      var channel = this.channelStore.getById(message.channel);
-
-      // Save Game
-
-      // find string like "<@grod> <@grod> 11 2, 11 4"
-      // Scores can be separated by whitespace or dash and number of sets can be inifinte
-      var gameResults = text.match(/\<\@(\S*)\>\ \<\@(\S*)\>\ (\d+[\ |-]\d+.*)/);
-      if (gameResults && gameResults.length === 4) {
-
-        var player1 = this.userStore.getById(gameResults[1]);
-        var player2 = this.userStore.getById(gameResults[2]);
-
-        var scoreString = gameResults[3];
-        var sets = scoreString.match(/(\d+[\ |-]\d+)/g);
-
-        var scores = [];
-
-        for (var i = 0; i < sets.length; i++) {
-          // Split up a score string: '11 4' (or '11-4') becomes [11, 4]
-          var s = sets[i].match(/(\d+)[\ |-](\d+)/);
-          if (!s || s.length < 3) {
-            this.sendTo(user, channel, 'Felaktig formatering');return;
+      var topPlayers = new _Store2.default();
+      topPlayers.fetch('players/top').then(function () {
+        var str = ':trophy: Veckans topplista :trophy:\n```';
+        if (allTime) {
+          str = ':trophy: Maratonlista :trophy:\n```';
+        }
+        for (var i = 0; i < topPlayers.models.length; i++) {
+          var p = topPlayers.models[i];
+          var rating = p.get('ratings').weekly;
+          if (allTime) {
+            rating = p.get('ratings').all_time;
           }
-          scores.push({
-            set: [s[1], s[2]]
-          });
+          str += i + 1 + '. ' + p.get('name') + ' (' + rating + ')\n';
+        }
+        str += '```';
+        callback(str);
+      }).catch(function (err) {
+        console.log('Could not fetch ladder', err);
+        callback('Kunde inte hämta topplistan :tired_face:');
+      });
+    }
+  }, {
+    key: 'getRankForUser',
+    value: function getRankForUser(userId, callback, allTime) {
+      var user = new _User2.default({ id: userId });
+
+      console.log('user id', userId);
+      user.fetch(process.env.API_BASE + 'players/' + userId).then(function (data) {
+        var ratings = user.get('ratings');
+        var ladderscore = ratings.weekly;
+        var ranks = user.get('rank');
+        var rank = ranks.weekly;
+        if (allTime) {
+          ladderscore = ratings.all_time;
+          rank = ranks.all_time;
         }
 
-        console.log('Saving game between ' + player1.get('name') + ' and ' + player2.get('name'));
-
-        var gameProps = {
-          players: [player1.getPropsForGame(), player2.getPropsForGame()],
-          sets: scores
-        };
-
-        console.log('Saving game', gameProps);
-
-        var game = new _Game2.default(gameProps);
-
-        game.save().then(function (response) {
-          console.log('response', response);
-          _this2.respondTo(user, channel, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:');
-        }).catch(function (error) {
-          console.log('Saving game error ', error);
-          _this2.respondTo(user, channel, 'Kunde inte spara matchen :crying_cat_face:');
-        });
-      }
-
-      // View user rank, or current player rank if omitting the  user-id parameter
-      else if (text.indexOf('rank') === 0) {
-          (function () {
-            var results = text.match(/\<\@(\S*)\>/);
-            var userId = user.id;
-            var weekly = text.indexOf('all time') > -1 ? false : true;
-            if (results) {
-              userId = results[1];
-            }
-
-            console.log('get user id', userId);
-
-            var u = _this2.userStore.where('id', userId);
-            var APIUser = new _User2.default({ id: u.get('name') });
-
-            APIUser.fetch(process.env.API_BASE + 'players/' + u.get('name')).then(function (data) {
-              var ratings = APIUser.get('ratings');
-              var ladderscore = ratings.weekly;
-              var ranks = APIUser.get('rank');
-              var rank = ranks.weekly;
-              if (!weekly) {
-                ladderscore = ratings.all_time;
-                rank = rank.all_time;
-              }
-              _this2.respondTo(user, channel, '@' + APIUser.get('slack_name') + ' har ladder score ' + ladderscore + ' och ligger på plats ' + rank);
-            }).catch(function (error) {
-              console.log('Get user error: ', error);
-            });
-          })();
+        var emoji = '';
+        if (rank == 1) {
+          emoji = ':party::sports_medal::trophy:';
         }
 
-        // View ladder
-        else if (text.indexOf('ladder') === 0) {
-            (function () {
-              var weekly = text.indexOf('all time') > -1 ? false : true;
-              var topPlayers = new _Store2.default();
-
-              topPlayers.fetch('players/top').then(function () {
-                var str = ':trophy: Topplista :trophy:\n```';
-                for (var _i = 0; _i < topPlayers.models.length; _i++) {
-                  var p = topPlayers.models[_i];
-                  var rating = weekly ? p.get('ratings').weekly : p.get('ratings').all_time;
-                  str += _i + 1 + '. ' + p.get('name') + ' (' + rating + ')\n';
-                }
-                str += '```';
-                _this2.respondTo(user, channel, str);
-              }).catch(function (err) {
-                console.log('Could not fetch ladder', err);
-                _this2.respondTo(user, channel, 'Kunde inte hämta topplistan :tired_face:');
-              });
-            })();
-          }
-
-          // View latest Games
-          else if (text.indexOf('games') === 0) {
-              (function () {
-                var games = new _GameStore2.default();
-                games.fetch().then(function () {
-                  _this2.respondTo(user, channel, 'Senaste matcherna :table_tennis_paddle_and_ball:\n' + games.prettyPrint());
-                }).catch(function (err) {
-                  console.log(err);
-                  _this2.respondTo(user, channel, 'Kunde inte hämta matcher :cry:');
-                });
-              })();
-            }
-
-            // No message
-            else {
-                var quotes = ['Vet du vad det sjukaste är?\nNär jag möter folk på gatan säger fem av tio fortfarande Kungen.', 'Medaljerna tänkte jag skicka till ett museum i Köping, men de fick inte plats så nu ligger de i påsar.', 'Jag var tvungen att sätta ett bunkerslag på 25 meter och "Tickan" sa till mig: "Sätter du det här slaget har du fri dricka i resten av ditt liv".\nJa, ja sa jag, pang mot flaggan och rakt i', 'Går jag in i en taxi i Kina säger chauffören: "Tja Lao Wa! Läget?".\nJag är halvkines och på slutet fick jag lika mycket stöd som den kines jag mötte.', 'Alla kineser jag möter och alla som är med dem, ska ta kort innan matcherna. För dem är det lika viktigt som att spela, och det är rätt häftigt. De vill ha något att visa upp i Kina.', 'Jag tycker att det är bättre ljus här i hallen, än när det är dåligt ljus.'];
-                var rand = Math.floor(Math.random() * quotes.length);
-                this.respondTo(user, channel, quotes[rand]);
-              }
+        callback('@' + user.get('slack_name') + ' har ladder score ' + ladderscore + ' och ligger på plats ' + rank + ' ' + emoji);
+      }).catch(function (error) {
+        callback('Kunde inte hämta användare :cry: ' + error);
+      });
     }
 
     // Check if message was posted in a channel or Direct Message
