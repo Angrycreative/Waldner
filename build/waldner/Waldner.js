@@ -63,14 +63,14 @@ var Waldner = function () {
 
         userId = userId || message.user;
         _this.getRankForUser(userId, function (responseString) {
-          _this.bot.respond(message, responseString);
+          _this.bot.respond(message, responseString, 'medal');
         }, allTime);
       });
 
       // Responds with the ladder
       this.bot.hears(/ladder(\ all\ time)?/i, function (message, allTime) {
         _this.getLadder(function (responseString) {
-          _this.bot.respond(message, responseString);
+          _this.bot.respond(message, responseString, 'medal');
         }, allTime);
       });
 
@@ -78,7 +78,7 @@ var Waldner = function () {
       this.bot.hears(/games/i, function (message) {
         var games = new _GameStore2.default();
         games.fetch().then(function () {
-          _this.bot.respond(message, 'Senaste matcherna :table_tennis_paddle_and_ball:\n' + games.prettyPrint());
+          _this.bot.respond(message, 'Senaste matcherna :table_tennis_paddle_and_ball:\n' + games.prettyPrint(), 'happy');
         }).catch(function () {
           _this.bot.respond(message, 'Kunde inte hämta matcher :cry:');
         });
@@ -103,7 +103,7 @@ var Waldner = function () {
           players: [firstUser.getPropsForGame(), secondUser.getPropsForGame()],
           sets: scores
         }).save().then(function () {
-          _this.bot.respond(message, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:');
+          _this.bot.respond(message, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:', 'happy');
         }).catch(function () {
           _this.bot.respond(message, 'Kunde inte spara matchen :crying_cat_face:');
         });
@@ -116,7 +116,7 @@ var Waldner = function () {
       this.bot.hears(/^waldner$/i, function (message) {
         var quotes = ['Vet du vad det sjukaste är?\nNär jag möter folk på gatan säger fem av tio fortfarande Kungen.', 'Medaljerna tänkte jag skicka till ett museum i Köping, men de fick inte plats så nu ligger de i påsar.', 'Jag var tvungen att sätta ett bunkerslag på 25 meter och "Tickan" sa till mig: "Sätter du det här slaget har du fri dricka i resten av ditt liv".\nJa, ja sa jag, pang mot flaggan och rakt i', 'Går jag in i en taxi i Kina säger chauffören: "Tja Lao Wa! Läget?".\nJag är halvkines och på slutet fick jag lika mycket stöd som den kines jag mötte.', 'Alla kineser jag möter och alla som är med dem, ska ta kort innan matcherna. För dem är det lika viktigt som att spela, och det är rätt häftigt. De vill ha något att visa upp i Kina.', 'Jag tycker att det är bättre ljus här i hallen, än när det är dåligt ljus.'];
         var rand = Math.floor(Math.random() * quotes.length);
-        _this.bot.respond(message, quotes[rand]);
+        _this.bot.respond(message, quotes[rand], 'happy');
       });
     }
   }, {
@@ -171,23 +171,6 @@ var Waldner = function () {
       }).catch(function (error) {
         callback('Kunde inte hämta användare :cry: ' + error);
       });
-    }
-
-    // Check if message was posted in a channel or Direct Message
-
-  }, {
-    key: 'respondTo',
-    value: function respondTo(user, channel, message, params) {
-      params = params || {};
-      if (!params.icon_user) {
-        params.icon_url = 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg';
-      }
-
-      if (channel) {
-        this.bot.postTo(channel.get('name'), message, params);
-      } else if (user) {
-        this.bot.postTo(user.get('name'), message, params);
-      }
     }
   }]);
 

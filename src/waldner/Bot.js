@@ -62,7 +62,7 @@ export default class Bot {
 
   }
 
-  respond( message, text ) {
+  respond( message, text, mood ) {
     let receiver = this.getUserName( message.user );
 
     // Channels are prefixed with 'C', users with 'U' and direct message with 'D'
@@ -71,9 +71,20 @@ export default class Bot {
       receiver = this.getChannelName( message.channel );
     }
 
-    let params = {
-      icon_url: 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg'
+    console.log('Mood', mood);
+
+    mood = mood || 'normal';
+    let moodIcons = {
+      'normal': 'http://api.angryladder.elmered.com/assets/images/serve.png',
+      'happy': 'http://api.angryladder.elmered.com/assets/images/happy.png',
+      'medal': 'http://api.angryladder.elmered.com/assets/images/medal.png'
     }
+
+    let params = {
+      icon_url: moodIcons[ mood ]
+      // icon_url: 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg'
+    }
+
     this.slackBot.postTo( receiver, text, params );
   }
 

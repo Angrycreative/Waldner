@@ -26,7 +26,7 @@ export default class Waldner {
 
       userId = userId || message.user;
       this.getRankForUser( userId, responseString => {
-        this.bot.respond( message, responseString );
+        this.bot.respond( message, responseString, 'medal' );
       }, allTime);
 
     });
@@ -34,7 +34,7 @@ export default class Waldner {
     // Responds with the ladder
     this.bot.hears( /ladder(\ all\ time)?/i, ( message, allTime ) => {
       this.getLadder( (responseString) => {
-        this.bot.respond( message, responseString );
+        this.bot.respond( message, responseString, 'medal' );
       }, allTime );
     });
 
@@ -43,7 +43,7 @@ export default class Waldner {
       let games = new GameStore();
       games.fetch()
         .then( () => {
-          this.bot.respond( message, 'Senaste matcherna :table_tennis_paddle_and_ball:\n'+games.prettyPrint() );
+          this.bot.respond( message, 'Senaste matcherna :table_tennis_paddle_and_ball:\n'+games.prettyPrint(), 'happy' );
         })
         .catch( () => {
           this.bot.respond( message, 'Kunde inte hämta matcher :cry:' );
@@ -73,7 +73,7 @@ export default class Waldner {
         sets: scores
       }).save()
       .then(() => {
-        this.bot.respond( message, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:');
+        this.bot.respond( message, ':table_tennis_paddle_and_ball: Matchen sparades! :table_tennis_paddle_and_ball:', 'happy');
       })
       .catch(() => {
         this.bot.respond( message, 'Kunde inte spara matchen :crying_cat_face:');
@@ -95,7 +95,7 @@ export default class Waldner {
         'Jag tycker att det är bättre ljus här i hallen, än när det är dåligt ljus.'
       ];
       let rand = Math.floor(Math.random() * quotes.length );
-      this.bot.respond( message, quotes[ rand ] );
+      this.bot.respond( message, quotes[ rand ], 'happy' );
     });
 
   }
@@ -147,21 +147,6 @@ export default class Waldner {
       .catch( (error) => {
         callback('Kunde inte hämta användare :cry: ' + error);
       });
-  }
-
-
-  // Check if message was posted in a channel or Direct Message
-  respondTo( user, channel, message, params ) {
-    params = params || {};
-    if (!params.icon_user) {
-      params.icon_url = 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg';
-    }
-
-    if ( channel ) {
-      this.bot.postTo( channel.get('name'), message, params );
-    } else if ( user ) {
-      this.bot.postTo( user.get('name'), message, params );
-    }
   }
 
 }

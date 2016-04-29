@@ -102,7 +102,7 @@ var Bot = function () {
     }
   }, {
     key: 'respond',
-    value: function respond(message, text) {
+    value: function respond(message, text, mood) {
       var receiver = this.getUserName(message.user);
 
       // Channels are prefixed with 'C', users with 'U' and direct message with 'D'
@@ -111,9 +111,20 @@ var Bot = function () {
         receiver = this.getChannelName(message.channel);
       }
 
-      var params = {
-        icon_url: 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg'
+      console.log('Mood', mood);
+
+      mood = mood || 'normal';
+      var moodIcons = {
+        'normal': 'http://api.angryladder.elmered.com/assets/images/serve.png',
+        'happy': 'http://api.angryladder.elmered.com/assets/images/happy.png',
+        'medal': 'http://api.angryladder.elmered.com/assets/images/medal.png'
       };
+
+      var params = {
+        icon_url: moodIcons[mood]
+        // icon_url: 'http://www.jorgenpersson.nu/wp-content/uploads/2015/02/legenden-jo-waldner.jpg'
+      };
+
       this.slackBot.postTo(receiver, text, params);
     }
   }, {
