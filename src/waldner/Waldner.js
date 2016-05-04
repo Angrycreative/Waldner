@@ -39,7 +39,8 @@ export default class Waldner {
     });
 
     // List games
-    this.bot.hears( /games/i, ( message ) => {
+    this.bot.hears( /games(\ \<\@(\S*)\>)?/i, ( message, userPresent, userId ) => {
+      // TODO: Handle player games
       let games = new GameStore();
       games.fetch()
         .then( () => {
@@ -48,6 +49,14 @@ export default class Waldner {
         .catch( () => {
           this.bot.respond( message, 'Kunde inte hämta matcher :cry:' );
         })
+    });
+
+    this.bot.hears( /stats(\ \<\@(\S*)\>)/i, (message, userPresent, userId) => {
+      this.getUser( userId, user => {
+        this.bot.respond( user.printStats() );
+      }, error => {
+        this.bot.respond( message, 'Kunde inte hämta matcher :cry:' );
+      }) 
     });
 
     // Save a game
@@ -105,15 +114,17 @@ export default class Waldner {
     console.log('ALL TIME', allTime);
 
     let topPlayers = new Store();
-    topPlayers.fetch('players/top')
+    topPlayers.fetch('players/top?include=stats')
       .then( () => {
         let str = ':trophy: Veckans topplista :trophy:\n```';
         if ( allTime ) { str = ':trophy: Maratonlista :trophy:\n```'; }
         for (let i = 0; i < topPlayers.models.length; i++) {
           let p = topPlayers.models[i];
           let rating = p.get('ratings').weekly;
+          let wins = p.get('stats').wins;
+          let losses = p.get('stats').loses;
           if (allTime) { rating = p.get('ratings').all_time; }
-          str += `${i+1}. ${p.get('name')} (${rating})\n`;
+          str += `${i+1}. ${p.get('name')} (${rating}): ${wins}-${losses}\n`;
         }
         str += '```';
         callback( str );
@@ -128,7 +139,7 @@ export default class Waldner {
     let user = new User({id: userId});
 
     console.log('user id', userId);
-    user.fetch( process.env.API_BASE + 'players/' + userId )
+    user.fetch( process.env.API_BASE + 'players/' + userId + '?include=stats' )
       .then( ( data ) => {
         let ratings = user.get('ratings');
         let ladderscore = ratings.weekly;
@@ -145,8 +156,19 @@ export default class Waldner {
         callback( `@${user.get('slack_name')} har ladder score ${ladderscore} och ligger på plats ${rank} ${emoji}` );
       })
       .catch( (error) => {
-        callback('Kunde inte hämta användare :cry: ' + error);
+        callback('Kunde inte hämta spelare :cry: ' + error);
       });
+  }
+
+  getUser( userId, successCallback, errorCallback ) {
+    let user = new User({id: userId});
+    user.fetch( process.env.API_BASE + 'players/' + userId + '?include=stats' ) 
+      then( (data) => {
+        successCallback( user );
+      })
+      .catch( error => {
+        errorCallback('Kunde inte hämta spelare ' + error);
+      })
   }
 
 }

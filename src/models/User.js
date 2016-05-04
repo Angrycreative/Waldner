@@ -17,7 +17,10 @@ export default class User extends Model {
       slack_name: this.get('name'),
       avatar_url: this.get('profile').image_original
     } 
+  }
 
+  printStats() {
+  
   }
 
 }
