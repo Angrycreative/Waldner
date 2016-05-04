@@ -51,11 +51,12 @@ export default class Waldner {
         })
     });
 
-    this.bot.hears( /stats(\ \<\@(\S*)\>)/i, (message, userPresent, userId) => {
+    this.bot.hears( /stats(\ \<\@(\S*)\>)?/i, (message, userPresent, userId) => {
+      userId = userId || message.user;
       this.getUser( userId, user => {
-        this.bot.respond( user.printStats() );
+        this.bot.respond( message, user.printStats() );
       }, error => {
-        this.bot.respond( message, 'Kunde inte hämta matcher :cry:' );
+        this.bot.respond( message, error );
       }) 
     });
 
@@ -162,8 +163,9 @@ export default class Waldner {
 
   getUser( userId, successCallback, errorCallback ) {
     let user = new User({id: userId});
-    user.fetch( process.env.API_BASE + 'players/' + userId + '?include=stats' ) 
-      then( (data) => {
+    console.log('uid', userId);
+    user.fetch( process.env.API_BASE + 'players/' + userId + '?include=stats' )
+      .then( (data) => {
         successCallback( user );
       })
       .catch( error => {

@@ -75,12 +75,22 @@ var Waldner = function () {
       });
 
       // List games
-      this.bot.hears(/games/i, function (message) {
+      this.bot.hears(/games(\ \<\@(\S*)\>)?/i, function (message, userPresent, userId) {
+        // TODO: Handle player games
         var games = new _GameStore2.default();
         games.fetch().then(function () {
           _this.bot.respond(message, 'Senaste matcherna :table_tennis_paddle_and_ball:\n' + games.prettyPrint(), 'happy');
         }).catch(function () {
           _this.bot.respond(message, 'Kunde inte hämta matcher :cry:');
+        });
+      });
+
+      this.bot.hears(/stats(\ \<\@(\S*)\>)?/i, function (message, userPresent, userId) {
+        userId = userId || message.user;
+        _this.getUser(userId, function (user) {
+          _this.bot.respond(message, user.printStats());
+        }, function (error) {
+          _this.bot.respond(message, error);
         });
       });
 
@@ -126,7 +136,7 @@ var Waldner = function () {
       console.log('ALL TIME', allTime);
 
       var topPlayers = new _Store2.default();
-      topPlayers.fetch('players/top').then(function () {
+      topPlayers.fetch('players/top?include=stats').then(function () {
         var str = ':trophy: Veckans topplista :trophy:\n```';
         if (allTime) {
           str = ':trophy: Maratonlista :trophy:\n```';
@@ -134,10 +144,12 @@ var Waldner = function () {
         for (var i = 0; i < topPlayers.models.length; i++) {
           var p = topPlayers.models[i];
           var rating = p.get('ratings').weekly;
+          var wins = p.get('stats').wins;
+          var losses = p.get('stats').loses;
           if (allTime) {
             rating = p.get('ratings').all_time;
           }
-          str += i + 1 + '. ' + p.get('name') + ' (' + rating + ')\n';
+          str += i + 1 + '. ' + p.get('name') + ' (' + rating + '): ' + wins + '-' + losses + '\n';
         }
         str += '```';
         callback(str);
@@ -152,7 +164,7 @@ var Waldner = function () {
       var user = new _User2.default({ id: userId });
 
       console.log('user id', userId);
-      user.fetch(process.env.API_BASE + 'players/' + userId).then(function (data) {
+      user.fetch(process.env.API_BASE + 'players/' + userId + '?include=stats').then(function (data) {
         var ratings = user.get('ratings');
         var ladderscore = ratings.weekly;
         var ranks = user.get('rank');
@@ -169,7 +181,18 @@ var Waldner = function () {
 
         callback('@' + user.get('slack_name') + ' har ladder score ' + ladderscore + ' och ligger på plats ' + rank + ' ' + emoji);
       }).catch(function (error) {
-        callback('Kunde inte hämta användare :cry: ' + error);
+        callback('Kunde inte hämta spelare :cry: ' + error);
+      });
+    }
+  }, {
+    key: 'getUser',
+    value: function getUser(userId, successCallback, errorCallback) {
+      var user = new _User2.default({ id: userId });
+      console.log('uid', userId);
+      user.fetch(process.env.API_BASE + 'players/' + userId + '?include=stats').then(function (data) {
+        successCallback(user);
+      }).catch(function (error) {
+        errorCallback('Kunde inte hämta spelare ' + error);
       });
     }
   }]);

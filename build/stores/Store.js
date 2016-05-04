@@ -37,7 +37,6 @@ var Store = function () {
 
   // Fetch all models on current index endpoint
 
-
   _createClass(Store, [{
     key: 'fetch',
     value: function fetch(url) {
