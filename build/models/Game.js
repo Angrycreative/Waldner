@@ -33,4 +33,5 @@ var Game = function (_Model) {
 
 exports.default = Game;
 
+
 Game.url = 'games';

@@ -32,6 +32,7 @@ var User = function (_Model) {
 
   // Necessary props with format that server needs
 
+
   _createClass(User, [{
     key: 'getPropsForGame',
     value: function getPropsForGame() {

@@ -60,6 +60,7 @@ var Bot = function () {
         for (var _iterator = this.vocabulary[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var command = _step.value;
 
+
           if (command.type = 'regexp') {
             var match = message.text.match(command.pattern);
             if (match) {
