@@ -13,6 +13,18 @@ When developing, and debugging - use `npm run dev`
 ### Building
 `npm run build`
 
+### Running in production
+
+Install [Forever](https://www.npmjs.com/package/forever) if it's not already installed:
+`sudo npm install forever -g`
+
+`forever stop build/index.js` (You need to build first)
+
+#### Stopping in production
+
+`forever stop build/index.js`
+
+
 ###Commands:
 
 All commands is prefixed with 'waldner' (or whatever the bot's name is)
@@ -24,3 +36,6 @@ Stores a game. One player must at least have 11 points, and the user can't have 
 Any number of sets separated by a comma
 
 `waldner games` Shows the last 5 games
+
+
+`waldner stats [@user]` Shows stats for user. 
