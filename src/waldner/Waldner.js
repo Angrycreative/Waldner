@@ -14,7 +14,7 @@ export default class Waldner {
   }
 
   run() {
-    console.log('Waldner iz alive!'); 
+    console.log('Waldner iz alive!');
     this.setupListeners();
     this.bot.init();
   }
@@ -57,7 +57,7 @@ export default class Waldner {
         this.bot.respond( message, user.printStats() );
       }, error => {
         this.bot.respond( message, error );
-      }) 
+      })
     });
 
     // Save a game

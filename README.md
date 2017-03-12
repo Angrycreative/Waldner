@@ -1,5 +1,6 @@
 # Waldner the bot
 Angry Creative Table Tennis Ladder BOT!
+Named after the best table tennis player of all time, Jan-Ove Waldner AKA Kungen(the king)
 
 ## Installation
 `npm install`
@@ -18,7 +19,7 @@ When developing, and debugging - use `npm run dev`
 Install [Forever](https://www.npmjs.com/package/forever) if it's not already installed:
 `sudo npm install forever -g`
 
-`forever stop build/index.js` (You need to build first)
+`forever start build/index.js` (You need to install and build first)
 
 #### Stopping in production
 
@@ -27,15 +28,21 @@ Install [Forever](https://www.npmjs.com/package/forever) if it's not already ins
 
 ###Commands:
 
-All commands is prefixed with 'waldner' (or whatever the bot's name is)
+All commands is prefixed with the Specified bot name. We will use the default 'waldner' in the examples
 
 `waldner ladder` Shows ladder
 
-`waldner @firstUser @secondUser score1 score2 [,score3 score4, ...]`
-Stores a game. One player must at least have 11 points, and the user can't have the same points.
-Any number of sets separated by a comma
+`waldner @firstUser @secondUser score1 score2 [score3 score4, ...]`
+Stores a game. One player must at least have 11 points, and the users can't have the same points.
+Any number of sets separated by a space
+Example: `waldner @peter @johan 11-5 11-13 15-13`
 
 `waldner games` Shows the last 5 games
 
+`waldner stats [@user]` Shows stats for user.
 
-`waldner stats [@user]` Shows stats for user. 
+`waldner` Shows a random actual Waldner quote.
+
+## TODO
+ * Translate and localize all strings
+ * Require confirmation from other player
