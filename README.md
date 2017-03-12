@@ -3,7 +3,11 @@ Angry Creative Table Tennis Ladder BOT!
 Named after the best table tennis player of all time, Jan-Ove Waldner AKA Kungen(the king)
 
 ## Installation
-`npm install`
+
+1. Create a new Slack integration
+2. Copy .env.sample to .env
+	1. Set `TOKEN` you get from your Slack integration
+3. Run `npm install`
 
 ## Usage
 Start bot
@@ -46,3 +50,4 @@ Example: `waldner @peter @johan 11-5 11-13 15-13`
 ## TODO
  * Translate and localize all strings
  * Require confirmation from other player
+ * Support authentication for accessing API (Token or basic auth?)
